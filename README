@@ -1,0 +1,49 @@
+Brutaru-Mihailisca Bogdan-Alexandru 325CA
+
+Am utilizat scheletul etapei 2
+
+Dificultati intampinate :
+
+La fel ca la etapa 2, am avut momente cand fie mi s-au corupt git-ul, fie intellij-ul, insa tura aceasta am dat save machine state in loc de shut down, si de atunci nu am mai avut probleme
+O alta problema intampinata este ca dupa ce am rezolvat tema de 36/80 (fara punctele pe git, readme si checkstyle), mi-am sters tot codul, intr-o incercare de a salva un git corupt. Spre norocul meu am reusit sa reimplementez tot in aproximativ 4 ore, tinand minte cam tot ce implementasem deja.
+
+Design pattern-uri implementate :
+
+VISITOR : wrapped
+
+wrapped-ul este diferit in functie de tipul de user, un user normal are anumite stats-uri, iar un creator de continut are altul. Cum pentru toti exista comanda de wrapped, am decis sa implementez visitor pentru a face o metoda separata pentru fiecare tip de user.
+
+OBSERVER : notifications
+
+atunci cand un creator de continut adauga ceva pe platforma (event, merch, podcast etc), trebuia sa anunti toti subscriberii sai, o relatie de dependenta 1 la n, deci automat m-a dus cu gandul la observer. Am creat interfata observer pe care o implementeaza clasa User. Clasa subiect o are clasa ContentCreator, deoarece nu sunt diferente intre stilul de notificari ale unui artist sau ale unui host.
+
+COMMAND : page navigation
+
+conceptul lui page navigation este similar ca acela de undo si redo, deci design pattern-ul apropiat aici este cel de command. Interfata Command (cu comenzile execute si undo) este implementata de catre o singura clasa, ConcreteCommand (am vrut sa iau aceleasi denumiri din laborator ca sa fie clar ce face fiecare clasa) unde execute are rol de previouspage (undo), iar undo are rol de nextpage (redo) (ironic)
+
+STRATEGY : recommendations
+
+A fost cel mai dificil de implementat pentru ca nu am gasit nicio diagrama in laborator care sa ma ajute, numai ca mi-a placut cel mai mult sa il implementez. Interfata Strategy are 3 clase care o implementeaza, cate una pentru fiecare tip de recomandare, iar clasa Context alege ce strategie returnez in obiectul de tip LibraryEntry, deoarece eu pot sa returnez o piesa, sau un playlist.
+
+Celelalte comenzi implementate fara design pattern-uri :
+
+Buy merch, See merch :
+
+Iau ultimul creator de continut pe care user-ul l-a accesat (lastSearchedContentCreator), verific daca mai este pe pagina lui, verific daca exista merch-ul si daca da, adaug in merchRevenue pretul merch-ului, si in lista merch-urilor cumparate a user-ului merch-ul nou.
+See merch returneaza lista curenta a user-ului cu merch-ul cumparat.
+
+Buy Premium, Cancel Premium :
+
+Am adaugat field-urile boolean premium, list<Song> premiumListenedSongs, list<Song> nonPremiumListenedSongs la user.
+user.premium = false => user nonpremium
+user.premium = true => user premium
+La buy premium, doar faceam user.setPremium(true);
+La cancel, apelam functia de monetizePremium, care calculeaza cati bani trebuie sa impart la melodiile ascultate de user pe perioada sa de user premium, apoi il faceam nonpremium
+
+Ad break :
+
+Am creat field-ul adMoney care retine cat costa ad-ul curent, si il initializez cu -1. In functia de simulateTime (pe care am modificat-o sa includa si field-ul User), verific daca adMoney > 0. Daca da, atunci voi da play la ad, si voi face monetizeNonPremium, functie asemanatoare lui monetizePremium, numai ca pentru useri nonpremium.
+
+Load recommendations :
+
+Similar ca la load, numai ca in loc de lastselected am creat lastsongrecommendation si lastplaylistrecommendation, care tin minte ultima recomandare (mereu cel putin una este nula) si care devine noua sursa
